@@ -7,7 +7,7 @@ from django.urls import reverse
 
 from dizajnapp.admin import FlightAdmin, AirwaysPilotAdmin, AirwaysAdmin
 from dizajnapp.forms import FlightForm
-from dizajnapp.models import Ballon, Airways, Flight, Pilot
+from dizajnapp.models import Ballon, Airways, Flight, Pilot, AirwaysPilot
 
 
 class FlightsTestCase(TestCase):
@@ -28,6 +28,30 @@ class FlightsTestCase(TestCase):
         )
         self.ballon = Ballon.objects.create(type='Hot Air', manufacturer_name='XYZ Balloons', max_passengers=4)
         self.airways = Airways.objects.create(name='Airways Inc.', year_founded=2020, coverage_EU=True)
+
+    def test_models(self):
+        flight = Flight.objects.create(
+            code='ABC123',
+            takeoff_airport='Skopje',
+            landing_airport='London',
+            user=self.user,
+            photo='https://cdn.britannica.com/84/158184-050-1D7ADEB5/balloon.jpg',
+            ballon=self.ballon,
+            pilot=self.pilot,
+            airways=self.airways
+        )
+        self.assertEqual(str(flight), 'ABC123')
+        self.assertEqual(flight.user, self.user)
+        self.assertEqual(flight.ballon, self.ballon)
+        self.assertEqual(flight.pilot, self.pilot)
+        self.assertEqual(flight.airways, self.airways)
+
+        airways_pilot = AirwaysPilot.objects.create(pilot=self.pilot, airways=self.airways)
+        self.assertEqual(str(airways_pilot), 'PilotName PilotLastName - Airways Inc.')
+
+        self.assertEqual(str(self.pilot), 'PilotName PilotLastName')
+        self.assertEqual(str(self.ballon), 'Hot Air - XYZ Balloons')
+        self.assertEqual(str(self.airways), 'Airways Inc.')
 
     def test_index_view(self):
         response = self.client.get(reverse('index'))
